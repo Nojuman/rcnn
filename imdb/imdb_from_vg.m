@@ -17,6 +17,7 @@ function imdb = imdb_from_vg(data_path)
     end
     
     imdb.roidb_func = @roidb_from_vg;
+    imdb.eval_func = @imdb_eval_vg;
     
     % Private VG details
     imdb.obj_bboxes_ = obj_bboxes;

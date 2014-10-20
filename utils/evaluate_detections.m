@@ -37,7 +37,6 @@ function [precision, recall, ap] = evaluate_detections(dets, gt, thresh)
         ii = dets_stacked(det_idx, 7);
         [t, j] = max(ious{img_idx}(ii, :));
         if t >= thresh
-            disp(dets_stacked(det_idx, :));
             tp(i) = 1;
             % Zero out the IOU with the ground truth box and all other
             % detections to ensure that no other detections match to this
@@ -51,9 +50,6 @@ function [precision, recall, ap] = evaluate_detections(dets, gt, thresh)
     % The rest is taken straight from VOCevaldet so it ought to work.
     fp = cumsum(fp);
     tp = cumsum(tp);
-    disp(tp);
-    disp(fp);
-    disp(num_positive);
     recall = tp / num_positive;
     precision = tp ./ (fp + tp);
     
