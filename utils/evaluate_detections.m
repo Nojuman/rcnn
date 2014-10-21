@@ -1,4 +1,4 @@
-function [precision, recall, ap] = evaluate_detections(dets, gt, thresh)
+function [precision, recall, ap, true_positive] = evaluate_detections(dets, gt, thresh)
     % Evaluate detections for a single class by computing precision,
     % recall, and average precision.
     %
@@ -16,6 +16,7 @@ function [precision, recall, ap] = evaluate_detections(dets, gt, thresh)
     num_images = length(dets);
     num_positive = 0;
     ious = cell(num_images, 1);
+    true_positive = cell(num_images, 1);
     % Compute IOU between all detections and all objects in all images.
     % Also append a column to each detections matrix with the image index
     % and another with the index of that detection within that images.
@@ -24,6 +25,7 @@ function [precision, recall, ap] = evaluate_detections(dets, gt, thresh)
         num_dets = size(dets{i}, 1);
         dets{i} = [dets{i}, i * ones(num_dets, 1), (1:num_dets)'];
         num_positive = num_positive + size(gt{i}, 1);
+        true_positive{i} = false(num_dets, 1);
     end
     dets_stacked = cat(1, dets{:});
     num_total_dets = size(dets_stacked, 1);
@@ -31,6 +33,7 @@ function [precision, recall, ap] = evaluate_detections(dets, gt, thresh)
     [~, ord] = sort(dets_stacked(:, 5), 'descend');
     fp = zeros(num_total_dets, 1);
     tp = zeros(num_total_dets, 1);
+
     for i = 1:num_total_dets
         det_idx = ord(i);
         img_idx = dets_stacked(det_idx, 6);
@@ -42,6 +45,7 @@ function [precision, recall, ap] = evaluate_detections(dets, gt, thresh)
             % detections to ensure that no other detections match to this
             % ground truth box.
             ious{img_idx}(:, j) = 0;
+            true_positive{img_idx}(ii) = true;
         else
             fp(i) = 1;
         end
