@@ -28,19 +28,19 @@ function res = imdb_eval_vg(cls, boxes, imdb, suffix, nms_thresh)
     [precision, recall, ap, true_positives] = evaluate_detections(dets, gt, 0.5);
     ap_auc = xVOCap(recall, precision);
     
-    disp(cls);
-    disp(ap_auc);
-    for i = 1:num_images
-        tp = true_positives{i};
-        disp([tp dets{i}(:, 5)]);
-        if ~any(tp), continue, end;
-        img = imread(imdb.image_at(i));
-        subplot(1, 2, 1);
-        showboxesc(img, dets{i}(~tp, :), 'r', '-');
-        subplot(1, 2, 2);
-        showboxesc(img, dets{i}(tp, :), 'g', '-');
-        pause;
-    end
+%     disp(cls);
+%     disp(ap_auc);
+%     for i = 1:num_images
+%         tp = true_positives{i};
+%         disp([tp dets{i}(:, 5)]);
+%         if ~any(tp), continue, end;
+%         img = imread(imdb.image_at(i));
+%         subplot(1, 2, 1);
+%         showboxesc(img, dets{i}(~tp, :), 'r', '-');
+%         subplot(1, 2, 2);
+%         showboxesc(img, dets{i}(tp, :), 'g', '-');
+%         pause;
+%     end
     
     res.recall = recall;
     res.precision = precision;

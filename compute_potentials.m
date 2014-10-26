@@ -27,8 +27,19 @@ function potentials = compute_potentials(rcnn_model, imdb)
   potentials.classes = rcnn_model.classes;
   potentials.boxes = cell(num_images, 1);
   potentials.scores = cell(num_images, 1);
+  potentials.overlap = cell(num_images, 1);
+  
+  potentials.image_id_to_idx = containers.Map();
+  for i = 1:length(image_ids)
+      potentials.image_id_to_idx(image_ids{i}) = i;
+  end
+  
+  potentials.class_to_idx = containers.Map();
+  for i = 1:length(potentials.classes)
+      potentials.class_to_idx(potentials.classes{i}) = i;
+  end
 
-  count = 0
+  count = 0;
   for f = 1:length(folds)
     for i = folds{f}
       count = count + 1;
@@ -36,7 +47,6 @@ function potentials = compute_potentials(rcnn_model, imdb)
               length(image_ids));
       d = rcnn_load_cached_pool5_features(feat_opts.cache_name, ...
             imdb.name, image_ids{i});
-      disp(d);
       if isempty(d.feat)
         continue;
       end
@@ -47,6 +57,7 @@ function potentials = compute_potentials(rcnn_model, imdb)
       % zs is [num_boxes x num_obj_classes]
       potentials.boxes{i} = d.boxes(~d.gt, :);
       potentials.scores{i} = zs(~d.gt, :);
+      potentials.overlap{i} = d.overlap(~d.gt, :);
     end
   end
 

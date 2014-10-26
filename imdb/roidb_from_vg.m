@@ -6,16 +6,29 @@ function roidb = roidb_from_vg(imdb)
        gt_boxes = imdb.obj_bboxes_(mask, :);
        gt_classes = imdb.obj_classes_(mask);
        regions = imdb.region_proposals_{i};
+      
+       % fprintf('%s %d\n', imdb.image_ids{i}, sum(mask));
        roidb.rois(i) = attach_regions(gt_boxes, gt_classes, ...,
-                            imdb.class_to_id, regions);
+                            imdb.class_to_id, regions, imdb.sizes(i, :), i);
     end
 end
 
-function rec = attach_regions(gt_boxes, gt_classes, class_to_id, regions)
+function rec = attach_regions(gt_boxes, gt_classes, class_to_id, regions, im_size, img_idx)
     % Convert regions from [x y w h] to [x1 y1 x2 y2]
     regions(:, 3) = regions(:, 1) + regions(:, 3);
     regions(:, 4) = regions(:, 2) + regions(:, 4);
     regions = double(regions);
+    
+    x1 = gt_boxes(:, 1); y1 = gt_boxes(:, 2);
+    x2 = gt_boxes(:, 3); y2 = gt_boxes(:, 4);
+    im_height = im_size(1); im_width = im_size(2);
+    bad_gt = (x1 > im_width | x2 > im_width | y1 > im_height | y2 > im_height);
+
+    if any(bad_gt)
+        gt_boxes = gt_boxes(~bad_gt, :);
+        gt_classes = gt_classes(~bad_gt);
+        warning('Image %d has %d bad ground-truth objects', img_idx, sum(bad_gt));
+    end
     
     gt_classes = class_to_id.values(gt_classes);
     gt_classes = cat(1, gt_classes{:});
@@ -32,7 +45,7 @@ function rec = attach_regions(gt_boxes, gt_classes, class_to_id, regions)
     end
     rec.boxes = single(all_boxes);
     rec.feat = [];
-    rec.class = uint8(cat(1, gt_classes, zeros(num_regions, 1)));
+    rec.class = uint16(cat(1, gt_classes, zeros(num_regions, 1)));
 end
 
 function o = boxoverlap_(a, b)
